@@ -68,8 +68,15 @@ public class YellowDB {
                 + "email text NOT NULL\n" + ");";
         state.execute(sql5);
 	}
+	
+	
+	
+	
+	
 
-	// LOGIN PAGE
+	/*
+	 * ************* LoginPage *************
+	 */
 
 	// method that can be accessed to add users to database
 	public void addUser(String email, String password) throws ClassNotFoundException, SQLException {
@@ -101,6 +108,7 @@ public class YellowDB {
 			while (rs.next()) {
 				count++;
 			}
+			rs.close();
 			if (count >= 1) {
 				System.out.println("Logging In");
 				System.out.println("Welcome, " + email);
@@ -115,8 +123,40 @@ public class YellowDB {
 		}
 		return false;
 	}
+	//Checks if user is Admin
+	public boolean isAdmin(String email) {
+    	if (con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+    	try {
+			ResultSet rs = con.prepareStatement("SELECT * FROM users WHERE email ='" + email + "'")
+					.executeQuery();
+			String type = rs.getString("type");
+			rs.close();
+			if(type.equals("admin")) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	return false;
+    }
+	
+	
+	
+	
+	
+	
 
-	// CHECKOUT PAGE
+	/*
+	 * ************* CheckoutPage *************
+	 */
 
 	// Used on the CreditCard window to save shipping information for accounts
 	public void saveInfo(String email, String fName, String lName, String address, String city, String state,
@@ -167,6 +207,7 @@ public class YellowDB {
 		shippingInfo.add(rsShipping.getString("city"));
 		shippingInfo.add(rsShipping.getString("state"));
 		shippingInfo.add(rsShipping.getString("zipCode"));
+		rsShipping.close();
 		return shippingInfo;
 
 	}
@@ -186,6 +227,7 @@ public class YellowDB {
 		billingInfo.add(rsBilling.getString("zipCode"));
 		billingInfo.add(rsBilling.getString("cardNumber"));
 		billingInfo.add(rsBilling.getString("expirationDate"));
+		rsBilling.close();
 		return billingInfo;
 
 	}
@@ -211,8 +253,15 @@ public class YellowDB {
 			prepBilling.setString(5, rsShipping.getString("state"));
 			prepBilling.setString(6, rsShipping.getString("zipCode"));
 		}
-
+		rsShipping.close();
 	}
+	
+	
+	
+	
+	
+	
+	
 
 	/*
 	 * ************* ProductPage *************
@@ -248,11 +297,16 @@ public class YellowDB {
 				item.setStock(rsItems.getInt("stock"));
 				itemList.add(item);
 			}
+			rsItems.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return itemList;
 	}
+	
+	
+	
+	
 
 	/*
 	 * ************** ShoppingCart **************
@@ -280,6 +334,7 @@ public class YellowDB {
             prep.setString(10, email);
             
             prep.executeUpdate();
+            prep.close();
             
         }
         catch (SQLException e) {
@@ -308,7 +363,8 @@ public class YellowDB {
                 String price = show.getString("price");
                 
                 System.out.printf("%d, %s, %s, %s,%s,%s\n", id, name, image, gender,size,price);
-        }
+            }
+            show.close();
         
         }catch (SQLException e) {
             e.printStackTrace();
@@ -343,11 +399,142 @@ public class YellowDB {
 				item.setStock(rsItems.getInt("stock"));
 				itemList.add(item);
 			}
+			rsItems.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return itemList;
+    }
+    
+    //Removes items from shopping cart
+    //Takes Shopping cart id, and email.(Using name instead of id would have resulted in any duplicates being deleted
+    public void remove(String id, String email) {
+    	if (con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+    	String sql = "Delete FROM shoppingCart WHERE email = ? AND id = ?";
+		PreparedStatement pstmt;
+		try {
+			pstmt = con.prepareStatement(sql);
+			 // set the corresponding param
+	        pstmt.setString(1, email);
+	        pstmt.setString(2, id);
+	        // execute the delete statement
+	        pstmt.executeUpdate();
+	        pstmt.close();
+	        
+	    	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    
+    }
+    
+    
+    
+    
+    
+    
+    /*
+	 * ************** InventoryPages **************
+	 */
+    //Takes item object so there isn't a ton of parameters
+    public void addItemToDB(Item item) {
+    	if (con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+    	String sql = "INSERT INTO items values(?,?,?,?,?,?,?,?,?);";
+    	PreparedStatement pstmt;
+    	try {
+			pstmt = con.prepareStatement(sql);
+	        pstmt.setString(2, item.getItemName());
+	        pstmt.setString(3, item.getBrand());
+	        pstmt.setString(4, item.getDescription());
+	        pstmt.setString(5, item.getItemImage());
+	        pstmt.setString(6, item.getGender());
+	        pstmt.setString(7, item.getSize());
+	        pstmt.setDouble(8, item.getPrice());
+	        pstmt.setInt(9, item.getStock());
+	        pstmt.executeUpdate();
+	        pstmt.close();
+	    	
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	
+    }
+    public void deleteItemFromDB(int id) {
+    	if (con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+    	String sql = "DELETE FROM items WHERE id = ?";
+		PreparedStatement pstmt;
+		try {
+			pstmt = con.prepareStatement(sql);
+			 // set the corresponding param
+	        pstmt.setInt(1, id);
+	        // execute the delete statement
+	        pstmt.executeUpdate();
+	        pstmt.close();
+	    	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    
+    }
+    public List<Item> getAllItems() {
+    	List<Item> itemList = new ArrayList<Item>();
+    	if (con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+    	try {
+			ResultSet rsItems = con.prepareStatement("SELECT * FROM items").executeQuery();
+			while(rsItems.next()) {
+				Item item = new Item();
+				item.setId(rsItems.getString("id"));
+				item.setItemName(rsItems.getString("itemName"));
+				item.setBrand(rsItems.getString("brand"));
+				item.setDescription(rsItems.getString("description"));
+				item.setItemImage(rsItems.getString("itemImage"));
+				item.setGender(rsItems.getString("gender"));
+				item.setSize(rsItems.getString("size"));
+				item.setPrice(rsItems.getDouble("price"));
+				item.setStock(rsItems.getInt("stock"));
+				itemList.add(item);
+			}
+			rsItems.close();
+			return itemList;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	return null;
     }
     
 }

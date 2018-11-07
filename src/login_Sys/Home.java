@@ -28,7 +28,11 @@ public class Home {
 	static JFrame frame;
 	private static String email;
 	private JTextField txtSearch;
+	private JButton btnAddItems;
+	private JButton btnDeleteItems;
+	private JPanel panel;
 	private String imagePath = "C:/Users/kevin/eclipse-workspace/YellowShoppingCatalog/images/";
+	YellowDB db = new YellowDB();
 
 	/**
 	 * Launch the application.
@@ -52,6 +56,7 @@ public class Home {
 	public Home(String email) {
 		this.email = email;
 		initialize();
+		checkAdmin();
 	}
 
 	/**
@@ -147,7 +152,7 @@ public class Home {
 		lblYellowShoppingSystem.setBounds(231, 0, 580, 137);
 		frame.getContentPane().add(lblYellowShoppingSystem);
 
-		JPanel panel = new JPanel();
+		panel = new JPanel();
 		panel.setBackground(new Color(51, 204, 204));
 		panel.setBounds(0, 0, 1367, 137);
 		frame.getContentPane().add(panel);
@@ -187,6 +192,37 @@ public class Home {
 		womens.setIcon(womenImg);
 		womens.setBounds(534, 263, 300, 300);
 		frame.getContentPane().add(womens);
+		
+		btnAddItems = new JButton("Add Items");
+		btnAddItems.setBounds(50, 643, 115, 29);
+		frame.getContentPane().add(btnAddItems);
+		btnAddItems.setVisible(false);
+		btnAddItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.dispose();
+				addInventory add = new addInventory(email);
+				add.frmAddInventory.setVisible(true);
+			}
+		});
+		
+		btnDeleteItems = new JButton("Delete Items");
+		btnDeleteItems.setBounds(185, 643, 115, 29);
+		frame.getContentPane().add(btnDeleteItems);
+		btnDeleteItems.setVisible(false);
+		btnDeleteItems.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.dispose();
+				deleteInventory delete = new deleteInventory(email);
+				delete.frmDeleteInventory.setVisible(true);
+			}
+		});
 
+	}
+	public void checkAdmin() {
+		if (db.isAdmin(email)) {
+			btnAddItems.setVisible(true);
+			btnDeleteItems.setVisible(true);
+			panel.setBackground(new Color(51, 51, 51));
+		}
 	}
 }
