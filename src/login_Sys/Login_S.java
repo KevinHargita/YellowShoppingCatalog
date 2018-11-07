@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.awt.Color;
 
 
 public class Login_S {
@@ -32,12 +33,15 @@ public class Login_S {
 	private JLabel lblPassword;
 	private JLabel lblExistingUser;
 	private JLabel lblNewLabel_3;
+	private JLabel lblLockedLoginMessage;
 	private JButton btnExit;
 	private JSeparator separator;
 	private JSeparator separator_1;
 	private JSeparator separator_2;
 	private JButton btnGuestLogin;
+	private JButton btnCreateAccount;
 	public String email;
+	private int incorrectPassword;
 	static YellowDB DB = new YellowDB();
 	/**
 	 * Launch the application.
@@ -139,7 +143,7 @@ public class Login_S {
 						homepage.frame.setVisible(true);
 						
 					}
-					else if(password.contains("12345") && username.contains("admin")) {
+					else if(password.contains("password") && username.contains("admin")) {
 						email = user_existing.getText();
 						frmYellowShoppingSystem.dispose();
 						Home homepage = new Home(email);
@@ -148,6 +152,13 @@ public class Login_S {
 					}
 					else {
 						JOptionPane.showMessageDialog(null, "Invalid Login Credentials","Login Error",JOptionPane.ERROR_MESSAGE);
+						incorrectPassword++;
+						if(incorrectPassword > 4) {
+							btnLogin.setEnabled(false);
+							btnCreateAccount.setEnabled(false);
+							lblLockedLoginMessage.setVisible(true);
+							
+						}
 						pw_existing.setText(null);
 						user_existing.setText(null);
 					}
@@ -166,7 +177,7 @@ public class Login_S {
 		
 		//Adds account to database
 		
-		JButton btnCreateAccount = new JButton("Create");
+		btnCreateAccount = new JButton("Create");
 		btnCreateAccount.setBounds(240, 226, 89, 23);
 		frmYellowShoppingSystem.getContentPane().add(btnCreateAccount);
 		btnCreateAccount.addActionListener(new ActionListener(){
@@ -232,22 +243,12 @@ public class Login_S {
 		});
 		btnGuestLogin.setBounds(240, 297, 89, 23);
 		frmYellowShoppingSystem.getContentPane().add(btnGuestLogin);
+		
+		lblLockedLoginMessage = new JLabel("Number of Login Attemps Exceeded, Try Again Later");
+		lblLockedLoginMessage.setForeground(Color.RED);
+		lblLockedLoginMessage.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblLockedLoginMessage.setBounds(45, 170, 308, 20);
+		lblLockedLoginMessage.setVisible(false);
+		frmYellowShoppingSystem.getContentPane().add(lblLockedLoginMessage);
 	}
-	/*public static void test(){
-		String cart = "1 2 3 4 5 6 ";
-		List<Item> items = new ArrayList<Item>();
-		try {
-			DB.addToCart(cart);
-			items = DB.getCart("1");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println(items.size());
-		System.out.println(items.get(0).getItemName() + "\n" + items.get(1).getItemName());
-	}*/
-	
 }
